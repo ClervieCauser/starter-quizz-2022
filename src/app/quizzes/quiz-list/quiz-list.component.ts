@@ -20,7 +20,7 @@ export class QuizListComponent implements OnInit {
   ngOnInit() {
   }
 
-  quizSelected(selected: boolean) {
+  quizSelected(selected: Quiz) {
     console.log('event received from child:', selected);
   }
 

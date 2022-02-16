@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject } from 'rxjs';
+import {BehaviorSubject, Observable, of} from 'rxjs';
 import { Quiz } from '../models/quiz.model';
 import { QUIZ_LIST } from '../mocks/quiz-list.mock';
-import {HttpClientModule} from "@angular/common/http";
+import {HttpClient} from "@angular/common/http";
 
 @Injectable({
   providedIn: 'root'
@@ -25,15 +25,16 @@ export class QuizService {
    */
   public quizzes$: BehaviorSubject<Quiz[]> = new BehaviorSubject(QUIZ_LIST);
 
-  public urlQuiz: HttpClientModule= new HttpClientModule();
+  public urlQuiz: string = "https://raw.githubusercontent.com/NablaT/starter-quiz-two/master/mock-quiz.json";
 
-  constructor() {
-
+  constructor(private http: HttpClient) {
+    this.getQuizzes();
   }
 
   addQuiz(quiz: Quiz) {
     // You need here to update the list of quiz and then update our observable (Subject) with the new list
     // More info: https://angular.io/tutorial/toh-pt6#the-searchterms-rxjs-subject
+    this.addId(quiz);
     this.quizzes.push(quiz);
     this.quizzes$.next(this.quizzes);
   }
@@ -45,5 +46,25 @@ export class QuizService {
     }
 
     this.quizzes$.next(this.quizzes);
+  }
+
+  getQuizzes(){
+    this.http.get<Quiz[]>(this.urlQuiz)
+      .subscribe((quizzes) => {
+          quizzes.forEach(q => this.addQuiz(q));
+      });
+  }
+
+  getQuizId(id: number): Observable<Quiz> {
+    // For now, assume that a hero with the specified `id` always exists.
+    // Error handling will be added in the next step of the tutorial.
+    const quiz = QUIZ_LIST.find(q => q.id === id)!;
+    return of(quiz);
+  }
+
+  addId(quiz: Quiz){
+    let id = 0;
+    this.quizzes.map(q=> q.id).forEach(qid => id=Math.max(qid, qid+1));
+    quiz.id = id;
   }
 }
